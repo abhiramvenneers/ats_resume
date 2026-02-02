@@ -79,19 +79,21 @@ def generate_insights(missing_keywords):
 
     return insights
 
-def get_improvement_strategies(score):
-    """Provides high-level formatting and strategic advice."""
+def get_improvement_strategies(score, missing_keywords=None):
+    # Get a specific example of a gap if available
+    gap_example = missing_keywords[0] if missing_keywords else "key industry terms"
+    
     if score < 40:
         return [
-            "Formatting: Ensure your resume is a single-column layout. Multi-column PDFs often fail ATS scans.",
-            "Alignment: Your core skills don't match the JD. Focus on including the missing keywords mentioned above.",
+            f"Critical Gap: Your resume completely lacks mention of '{gap_example}'.",
+            "Formatting: Ensure your resume is a single-column layout.",
             "Action: Standardize headings like 'Work Experience' and 'Education'."
         ]
     elif score < 75:
         return [
-            "Optimization: You have the right base. Try to mention key technologies 2-3 times to increase density.",
-            "Quantification: Use numbers (e.g., 'Improved speed by 20%') to stand out to the hiring manager.",
-            "Context: Ensure missing keywords are placed within your professional experience, not just a skills list."
+            f"Optimization: Increase keyword density for terms like '{gap_example}'.",
+            "Quantification: Use numbers (e.g., 'Improved speed by 20%') to stand out.",
+            "Context: Ensure missing keywords are placed within professional experience."
         ]
     else:
         return [

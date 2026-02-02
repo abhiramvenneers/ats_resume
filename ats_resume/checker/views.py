@@ -26,7 +26,7 @@ def checker_view(request):
                     'filename': f.name,
                     'score': score,
                     'missing': missing,
-                    'strategies': get_improvement_strategies(score)
+                    'strategies': get_improvement_strategies(score, missing)
                 })
             
             # Sort results by highest score first
