@@ -1,0 +1,113 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Suite | Midnight Edition</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <header class="hero-header">
+        <h1>RESUME <span style="color: var(--neon-blue);">SUITE</span></h1>
+        <p style="color: var(--text-dim)">Scan your compatibility or build a target-aligned template.</p>
+    </header>
+
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="openTab(event, 'scanner')">Intelligence Scanner</button>
+        <button class="tab-btn" onclick="openTab(event, 'builder')">AI Template Builder</button>
+    </div>
+
+    <main id="scanner" class="tab-content glass-panel" style="display: block;">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="check">
+            <div class="input-grid">
+                <div class="input-section">
+                    <label class="step-label">01. JOB DESCRIPTION</label>
+                    <textarea name="job_description" rows="12" placeholder="Paste target JD...">{% if job_description %}{{ job_description }}{% endif %}</textarea>
+                </div>
+                <div class="input-section">
+                    <label class="step-label">02. RESUME FILE</label>
+                    <div class="upload-zone">
+                        <div style="font-size: 2.5rem;">📄</div>
+                        <input type="file" name="resume_file" accept=".pdf">
+                    </div>
+                    <button type="submit" class="btn-glow">Run Scan</button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <main id="builder" class="tab-content glass-panel" style="display: none;">
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create">
+            <div class="input-section">
+                <label class="step-label">TARGET JOB DESCRIPTION</label>
+                <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 15px;">Paste the JD below. Our AI will extract keywords and structure a template for you.</p>
+                <textarea name="job_description" rows="10" placeholder="Paste JD here...">{% if job_description %}{{ job_description }}{% endif %}</textarea>
+                <button type="submit" class="btn-glow" style="background: linear-gradient(45deg, #10b981, #3b82f6);">Generate AI Template</button>
+            </div>
+        </form>
+    </main>
+
+    {% if score %}
+    <div class="results-container">
+        <div class="results-header">
+            <h2>Scan Analysis</h2>
+            <div class="score-badge">{{ score }}%</div>
+        </div>
+        <div class="input-grid">
+            <div class="glass-panel">
+                <h3 style="color: var(--neon-blue);">Missing Keywords</h3>
+                <div style="margin-top: 15px;">
+                    {% for word in missing %}<span class="keyword-pill">{{ word }}</span>{% endfor %}
+                </div>
+            </div>
+            <div class="glass-panel">
+                <h3 style="color: var(--neon-purple);">Expert Insights</h3>
+                {% for tip in insights %}<div class="insight-card">{{ tip }}</div>{% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if template %}
+    <div class="results-container" id="template-output">
+        <h2 style="margin-bottom: 20px;">AI Generated Template</h2>
+        <div class="glass-panel template-box">
+            <pre>{{ template }}</pre>
+            <button onclick="copyTemplate()" class="btn-glow" style="width: auto; padding: 10px 25px; font-size: 0.8rem;">Copy to Clipboard</button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    function copyTemplate() {
+        const text = document.querySelector('.template-box pre').innerText;
+        navigator.clipboard.writeText(text);
+        alert("Template copied!");
+    }
+
+    // Auto-switch to builder tab if template is present
+    {% if template %}
+        document.querySelector('.tab-btn:nth-child(2)').click();
+    {% endif %}
+</script>
+</body>
+</html>

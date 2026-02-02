@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="hero-header">
+    <h1>Intelligence <span style="color: var(--neon-blue);">Scanner</span></h1>
+    <p style="color: var(--text-dim)">Bulk analysis for recruitment. Audit candidate profiles.</p>
+</header>
+
+<main class="glass-panel">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label class="step-label">1. JOB DESCRIPTION</label>
+        <textarea name="job_description" rows="8" required>{{ job_description }}</textarea>
+
+        <label class="step-label">2. UPLOAD RESUMES (PDF)</label>
+        <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+            <input type="file" name="resume_file" id="file-input" accept=".pdf" multiple required hidden>
+            <span style="font-size: 2rem;">📂</span>
+            <p id="file-count">Click to Upload Multiple Files</p>
+        </div>
+
+        <button type="submit" class="btn-glow" style="margin-top: 30px;">🚀 Execute Batch Scan</button>
+    </form>
+</main>
+
+{% if bulk_results %}
+<section class="results-container">
+    <h2>Leaderboard</h2>
+    <div class="glass-panel" style="padding: 0; overflow: hidden; margin-top: 20px;">
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Candidate</th>
+                    <th>Score</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in bulk_results %}
+                <tr>
+                    <td>#{{ forloop.counter }}</td>
+                    <td>{{ res.filename }}</td>
+                    <td><span class="score-pill {% if res.score > 70 %}high-score{% else %}low-score{% endif %}">{{ res.score }}%</span></td>
+                    <td style="text-align: right;">
+                        <button class="btn-view" onclick="openModal('{{ forloop.index }}')">View Gaps</button>
+                    </td>
+                </tr>
+                <div id="data-{{ forloop.index }}" style="display:none;" 
+                     data-filename="{{ res.filename }}" 
+                     data-score="{{ res.score }}"
+                     data-missing="{{ res.missing|join:', ' }}"
+                     data-strategies="{{ res.strategies|join:'|' }}"></div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div id="details-modal" class="modal-overlay">
+    <div class="modal-content glass-panel">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title" style="color: var(--neon-blue);"></h2>
+        <div class="insight-card" style="margin-top: 20px;">
+            <h4 style="color: var(--neon-purple);">MISSING VALUE DESCRIPTION</h4>
+            <p id="modal-gap-desc" style="font-size: 0.9rem; color: var(--text-dim); margin: 10px 0;"></p>
+            <div id="modal-missing" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+        </div>
+        <ul id="modal-strategies" style="margin-top: 20px; padding-left: 20px;"></ul>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    function openModal(id) {
+        const data = document.getElementById(`data-${id}`).dataset;
+        document.getElementById('modal-title').innerText = data.filename;
+        const missingArray = data.missing.split(', ').filter(x => x.length > 0);
+        
+        document.getElementById('modal-gap-desc').innerText = `The AI identified ${missingArray.length} critical keywords in the JD that are missing from this resume. This directly reduces the ATS visibility.`;
+        
+        const keywordBox = document.getElementById('modal-missing');
+        keywordBox.innerHTML = '';
+        missingArray.forEach(word => {
+            keywordBox.innerHTML += `<span class="info-tag">${word}</span>`;
+        });
+
+        const stratBox = document.getElementById('modal-strategies');
+        stratBox.innerHTML = '';
+        data.strategies.split('|').forEach(s => {
+            if(s.trim()) stratBox.innerHTML += `<li>${s}</li>`;
+        });
+
+        document.getElementById('details-modal').style.display = 'flex';
+    }
+    function closeModal() { document.getElementById('details-modal').style.display = 'none'; }
+    document.getElementById('file-input').addEventListener('change', (e) => {
+        document.getElementById('file-count').innerText = `${e.target.files.length} Files Selected`;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ATS Resume Suite{% endblock %}</title>
+    
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Ensuring the active link in the nav stands out */
+        .nav-links a.active {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="radar-pulse"></div>
+        <div class="loading-text">Initializing AI...</div>
+    </div>
+
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="{% url 'checker' %}" class="logo">RESUME<span>.AI</span></a>
+            <div class="nav-links">
+                <a href="{% url 'checker' %}" id="nav-scanner">Scanner</a>
+                <a href="{% url 'generator' %}" id="nav-builder">Builder</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer style="text-align: center; padding: 40px; margin-top: 50px; border-top: 1px solid var(--border);">
+        <p style="color: var(--text-dim); font-size: 0.8rem;">
+            &copy; 2026 ATS Resume Suite | Powered by Semantic Analysis AI
+        </p>
+    </footer>
+
+    <script>
+        // HANDLE LOADING ANIMATION
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                const overlay = document.getElementById('loading-overlay');
+                const text = overlay.querySelector('.loading-text');
+                
+                // Show the overlay
+                overlay.style.display = 'flex';
+                
+                // Dynamic text based on current page
+                if (window.location.pathname.includes('generator')) {
+                    text.innerHTML = "Optimizing Keywords & Building Blueprint...";
+                } else {
+                    text.innerHTML = "Extracting PDF & Running Semantic Scan...";
+                }
+            });
+        });
+
+        // HANDLE ACTIVE NAV LINK COLORING
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('generator')) {
+            document.getElementById('nav-builder').classList.add('active');
+        } else {
+            document.getElementById('nav-scanner').classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

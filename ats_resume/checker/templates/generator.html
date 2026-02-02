@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<header class="hero-header">
+    <h1>AI Template <span style="color: var(--neon-purple);">Builder</span></h1>
+    <p style="color: var(--text-dim)">Generate an ATS-proof blueprint.</p>
+</header>
+
+<main class="glass-panel">
+    <form method="POST">
+        {% csrf_token %}
+        <label class="step-label">TARGET JOB DESCRIPTION</label>
+        <textarea name="job_description" rows="10" placeholder="Paste JD here...">{{ job_description }}</textarea>
+        <button type="submit" class="btn-glow">✨ Generate Smart Blueprint</button>
+    </form>
+</main>
+
+{% if template %}
+<div class="results-container">
+    <div class="glass-panel template-box">
+        <pre id="resumeTemplate">{{ template }}</pre>
+    </div>
+    <button onclick="copyToClipboard()" class="btn-glow" id="copyBtn" style="margin-top: 20px;">📋 Copy to Clipboard</button>
+</div>
+
+<script>
+    function copyToClipboard() {
+        const text = document.getElementById('resumeTemplate').innerText;
+        navigator.clipboard.writeText(text);
+        document.getElementById('copyBtn').innerText = "✅ Copied!";
+    }
+</script>
+{% endif %}
+{% endblock %}
