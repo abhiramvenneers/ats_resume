@@ -6,22 +6,27 @@ from .utils import (
     extract_top_keywords,
     generate_resume_template
 )
+from .models import ScannedResume
 
 def checker_view(request):
     context = {}
     if request.method == "POST":
         job_desc = request.POST.get('job_description')
-        # Get multiple files using getlist
         resume_files = request.FILES.getlist('resume_file')
         
-        context['job_description'] = job_desc
-
         if job_desc and resume_files:
             results = []
             for f in resume_files:
-                # Reuse your existing processing logic
                 score, missing = process_resume(f, job_desc)
                 
+                # --- SAVE TO DATABASE ---
+                ScannedResume.objects.create(
+                    filename=f.name,
+                    resume_file=f,
+                    score=score
+                )
+                # ------------------------
+
                 results.append({
                     'filename': f.name,
                     'score': score,
@@ -29,7 +34,6 @@ def checker_view(request):
                     'strategies': get_improvement_strategies(score, missing)
                 })
             
-            # Sort results by highest score first
             context['bulk_results'] = sorted(results, key=lambda x: x['score'], reverse=True)
             
     return render(request, 'checker.html', context)
@@ -61,3 +65,4 @@ def generator_view(request):
             })
             
     return render(request, 'generator.html', context)
+
